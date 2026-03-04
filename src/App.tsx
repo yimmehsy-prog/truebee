@@ -8,10 +8,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { GeneratorForm } from './components/GeneratorForm';
 import { ResultModal } from './components/ResultModal';
 import { generateCopy, GenerateOptions } from './lib/gemini';
-import { Sparkles, Zap, TrendingUp, User, LogOut, History, LogIn } from 'lucide-react';
+import { Sparkles, Zap, TrendingUp, User, LogOut, History, LogIn, Crown } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
+import { ErrorModal } from './components/ErrorModal';
 import { HistoryDrawer } from './components/HistoryDrawer';
+import { UserCenterModal } from './components/UserCenterModal';
 
 function MainContent() {
   const [result, setResult] = useState('');
@@ -24,6 +26,7 @@ function MainContent() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [isUserCenterOpen, setIsUserCenterOpen] = useState(false);
   
   const { user, logout } = useAuth();
 
@@ -134,6 +137,16 @@ function MainContent() {
                       >
                         <button
                           onClick={() => {
+                            setIsUserCenterOpen(true);
+                            setIsUserMenuOpen(false);
+                          }}
+                          className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                        >
+                          <Crown className="w-4 h-4 text-amber-500" />
+                          会员中心
+                        </button>
+                        <button
+                          onClick={() => {
                             setIsHistoryOpen(true);
                             setIsUserMenuOpen(false);
                           }}
@@ -171,22 +184,22 @@ function MainContent() {
         </div>
       </nav>
 
-      <div className="relative z-10 w-full px-4 xl:px-[150px] py-10 md:py-16 mt-12 mx-auto">
+      <div className="relative z-10 w-full px-4 xl:px-[150px] py-6 md:py-16 mt-16 md:mt-12 mx-auto">
         
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 space-y-4"
+          className="text-center mb-8 md:mb-12 space-y-3 md:space-y-4"
         >
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight text-slate-900">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
               Truebee
             </span>
             爆款文案生成器
           </h1>
-          <p className="text-base md:text-lg text-slate-500 mx-auto">
+          <p className="text-sm md:text-lg text-slate-500 mx-auto px-4">
             一键生成小红书、抖音、朋友圈等平台的吸睛文案。让 AI 帮你抓住流量密码，轻松写出 10w+爆款文案
           </p>
         </motion.div>
@@ -198,15 +211,7 @@ function MainContent() {
           <div className="w-full max-w-6xl space-y-12">
             <GeneratorForm onSubmit={handleGenerate} isLoading={isLoading} history={history} />
             
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm text-center"
-              >
-                {error}
-              </motion.div>
-            )}
+            {/* Error display removed, now using ErrorModal */}
 
             {/* Features / Trust Badges */}
             <motion.div 
@@ -286,6 +291,8 @@ function MainContent() {
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <HistoryDrawer isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
+      <UserCenterModal isOpen={isUserCenterOpen} onClose={() => setIsUserCenterOpen(false)} />
+      <ErrorModal isOpen={!!error} error={error} onClose={() => setError('')} />
       <ResultModal 
         isOpen={isResultModalOpen} 
         content={result} 

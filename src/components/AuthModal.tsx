@@ -60,50 +60,50 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-full md:max-w-md bg-white rounded-3xl md:rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-slate-900">
+            <div className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
                   {isLogin ? '欢迎回来' : '创建账号'}
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors -mr-2"
                 >
-                  <X className="w-5 h-5 text-slate-500" />
+                  <X className="w-6 h-6 text-slate-500" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="block text-base font-bold text-slate-900 ml-1">
                     用户名
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full pl-12 pr-4 h-14 border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-base font-medium placeholder:text-slate-400"
                       placeholder="请输入用户名"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                <div className="space-y-2">
+                  <label className="block text-base font-bold text-slate-900 ml-1">
                     密码
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full pl-12 pr-4 h-14 border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-base font-medium placeholder:text-slate-400"
                       placeholder="请输入密码"
                       required
                     />
@@ -111,7 +111,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </div>
 
                 {error && (
-                  <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+                  <div className="text-red-500 text-sm bg-red-50 p-4 rounded-xl flex items-center gap-2">
+                    <div className="w-1 h-4 bg-red-500 rounded-full" />
                     {error}
                   </div>
                 )}
@@ -119,21 +120,21 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-200 active:scale-[0.98]"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
                     isLogin ? '登录' : '注册'
                   )}
                 </button>
               </form>
 
-              <div className="mt-6 text-center text-sm text-slate-500">
+              <div className="mt-8 text-center text-base text-slate-500">
                 {isLogin ? '还没有账号？' : '已有账号？'}
                 <button
                   onClick={() => setIsLogin(!isLogin)}
-                  className="text-indigo-600 font-medium hover:underline ml-1"
+                  className="text-indigo-600 font-bold hover:underline ml-1 p-2"
                 >
                   {isLogin ? '立即注册' : '直接登录'}
                 </button>

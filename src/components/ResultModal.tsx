@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Copy, Check, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Toast, ToastType } from './Toast';
 
 interface ResultModalProps {
   isOpen: boolean;
@@ -12,6 +13,11 @@ interface ResultModalProps {
 export function ResultModal({ isOpen, content, onClose, onUpdate }: ResultModalProps) {
   const [editedContent, setEditedContent] = useState(content);
   const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false,
+  });
 
   useEffect(() => {
     setEditedContent(content);
@@ -22,13 +28,39 @@ export function ResultModal({ isOpen, content, onClose, onUpdate }: ResultModalP
     onUpdate(newContent);
   };
 
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, isVisible: true });
+  };
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(editedContent);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(editedContent);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = editedContent;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+        } catch (err) {
+          console.error('Fallback: Oops, unable to copy', err);
+          throw new Error('Fallback copy failed');
+        }
+        document.body.removeChild(textArea);
+      }
+      
       setCopied(true);
+      showToast('复制成功！', 'success');
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
+      showToast('复制失败，请手动复制', 'error');
     }
   };
 
@@ -36,6 +68,12 @@ export function ResultModal({ isOpen, content, onClose, onUpdate }: ResultModalP
     <AnimatePresence>
       {isOpen && (
         <>
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            isVisible={toast.isVisible} 
+            onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+          />
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -47,10 +85,10 @@ export function ResultModal({ isOpen, content, onClose, onUpdate }: ResultModalP
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-[80vh] bg-white rounded-3xl shadow-2xl z-[70] overflow-hidden flex flex-col"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] md:w-full md:max-w-3xl h-[80vh] bg-white rounded-3xl shadow-2xl z-[70] overflow-hidden flex flex-col"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+            <div className="px-4 md:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
               <div className="flex items-center gap-4">
                 <h3 className="text-lg font-bold text-slate-900">生成结果</h3>
               </div>
