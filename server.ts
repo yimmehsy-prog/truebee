@@ -223,9 +223,13 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.resolve(__dirname, 'dist')));
+    // In production, serve the static files from the dist directory
+    const distPath = path.join(__dirname, 'dist');
+    app.use(express.static(distPath));
+    
+    // Handle client-side routing by returning index.html for all non-API routes
     app.get('*', (req, res) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 

@@ -43,6 +43,10 @@ npm install
 # 5. 构建前端
 echo "  - 正在构建前端资源..."
 npm run build
+if [ ! -d "dist" ]; then
+    echo "❌ 构建失败：dist 目录不存在"
+    exit 1
+fi
 
 # 6. 检查环境变量
 if [ ! -f ".env" ]; then
