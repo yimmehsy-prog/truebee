@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, Crown, Smartphone, CreditCard, User as UserIcon, History, LogOut } from 'lucide-react';
+import { X, Check, Crown, Smartphone, CreditCard, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface UserCenterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogout: () => void;
-  onOpenHistory: () => void;
 }
 
 const PLANS = [
@@ -16,7 +14,7 @@ const PLANS = [
   { id: 'year', name: '年卡会员', price: 99.9, duration: '12个月', originalPrice: 299.9, badge: '限时特惠' },
 ];
 
-export function UserCenterModal({ isOpen, onClose, onLogout, onOpenHistory }: UserCenterModalProps) {
+export function UserCenterModal({ isOpen, onClose }: UserCenterModalProps) {
   const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState(PLANS[1]);
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
@@ -66,30 +64,6 @@ export function UserCenterModal({ isOpen, onClose, onLogout, onOpenHistory }: Us
                     className="p-2 hover:bg-slate-200 rounded-full transition-colors"
                   >
                     <X className="w-6 h-6 text-slate-500" />
-                  </button>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      onOpenHistory();
-                      onClose();
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <History className="w-4 h-4" />
-                    生成历史
-                  </button>
-                  <button
-                    onClick={() => {
-                      onLogout();
-                      onClose();
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    退出登录
                   </button>
                 </div>
               </div>
