@@ -111,66 +111,15 @@ function MainContent() {
 
           <div className="relative">
             {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-                >
-                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium">
-                    {user.username[0].toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">{user.username}</span>
-                </button>
-
-                <AnimatePresence>
-                  {isUserMenuOpen && (
-                    <>
-                      <div 
-                        className="fixed inset-0 z-40" 
-                        onClick={() => setIsUserMenuOpen(false)} 
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50"
-                      >
-                        <button
-                          onClick={() => {
-                            setIsUserCenterOpen(true);
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                          <Crown className="w-4 h-4 text-amber-500" />
-                          会员中心
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsHistoryOpen(true);
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                          <History className="w-4 h-4" />
-                          历史记录
-                        </button>
-                        <div className="h-px bg-slate-100" />
-                        <button
-                          onClick={() => {
-                            logout();
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          退出登录
-                        </button>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
+              <button
+                onClick={() => setIsUserCenterOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium">
+                  {user.username[0].toUpperCase()}
+                </div>
+                <span className="text-sm font-medium text-slate-700">{user.username}</span>
+              </button>
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
@@ -291,7 +240,12 @@ function MainContent() {
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <HistoryDrawer isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
-      <UserCenterModal isOpen={isUserCenterOpen} onClose={() => setIsUserCenterOpen(false)} />
+      <UserCenterModal 
+        isOpen={isUserCenterOpen} 
+        onClose={() => setIsUserCenterOpen(false)} 
+        onLogout={logout}
+        onOpenHistory={() => setIsHistoryOpen(true)}
+      />
       <ErrorModal isOpen={!!error} error={error} onClose={() => setError('')} />
       <ResultModal 
         isOpen={isResultModalOpen} 
