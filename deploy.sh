@@ -21,13 +21,9 @@ else
     echo "  - Node.js 已安装: $(node -v)"
 fi
 
-# 2. 检查并安装 PM2
-if ! command -v pm2 &> /dev/null; then
-    echo "  - 正在安装 PM2..."
-    npm install -g pm2 tsx
-else
-    echo "  - PM2 已安装"
-fi
+# 2. 检查并安装 PM2 和 tsx
+npm install -g pm2 tsx || echo "全局安装失败，尝试继续..."
+npm install tsx --save-dev
 
 # 3. 创建应用目录 (如果不存在)
 if [ ! -d "$APP_DIR" ]; then
@@ -51,9 +47,9 @@ npm run build
 # 6. 检查环境变量
 if [ ! -f ".env" ]; then
     echo "⚠️ 未找到 .env 文件，正在创建默认配置..."
-    read -p "请输入你的 GEMINI_API_KEY: " api_key
+    read -p "请输入你的 DEEPSEEK_API_KEY: " api_key
     cat <<EOF > .env
-GEMINI_API_KEY=$api_key
+DEEPSEEK_API_KEY=$api_key
 JWT_SECRET=$(openssl rand -hex 16)
 NODE_ENV=production
 PORT=$PORT
@@ -63,11 +59,10 @@ fi
 
 # 7. 启动/重启应用
 echo "  - 正在通过 PM2 启动应用..."
-if pm2 list | grep -q "$APP_NAME"; then
-    pm2 restart "$APP_NAME"
-else
-    pm2 start server.ts --name "$APP_NAME" --interpreter tsx
-fi
+# 停止旧进程防止冲突
+pm2 delete "$APP_NAME" || true
+# 使用 npx 确保能找到本地或全局的 tsx
+pm2 start "npx tsx server.ts" --name "$APP_NAME"
 
 # 8. 设置开机自启
 pm2 save
