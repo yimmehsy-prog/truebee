@@ -55,7 +55,7 @@ app.post('/api/auth/register', async (req, res) => {
   const { username, password } = req.body;
   
   if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required' });
+    return res.status(400).json({ error: '用户名和密码不能为空' });
   }
 
   try {
@@ -74,10 +74,11 @@ app.post('/api/auth/register', async (req, res) => {
 
     res.json({ user: { id: info.lastInsertRowid, username } });
   } catch (error: any) {
+    console.error('Registration error:', error);
     if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(400).json({ error: 'Username already exists' });
+      return res.status(400).json({ error: '该用户名已被注册' });
     }
-    res.status(500).json({ error: 'Registration failed' });
+    res.status(500).json({ error: '注册失败，请稍后重试' });
   }
 });
 
@@ -88,7 +89,7 @@ app.post('/api/auth/login', async (req, res) => {
     const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username) as any;
     
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: '用户名或密码错误' });
     }
 
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
@@ -105,7 +106,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     res.json({ user: { id: user.id, username: user.username } });
   } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ error: '登录失败，请稍后重试' });
   }
 });
 
