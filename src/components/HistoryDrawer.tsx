@@ -27,13 +27,14 @@ export function HistoryDrawer({ isOpen, onClose }: HistoryDrawerProps) {
     }
   }, [isOpen]);
 
-  const fetchHistory = async () => {
+  const fetchHistory = () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/history');
-      if (res.ok) {
-        const data = await res.json();
-        setHistory(data.history);
+      const stored = localStorage.getItem('truebee_history');
+      if (stored) {
+        setHistory(JSON.parse(stored));
+      } else {
+        setHistory([]);
       }
     } catch (error) {
       console.error('Failed to fetch history:', error);

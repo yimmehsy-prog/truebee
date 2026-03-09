@@ -34,12 +34,11 @@ function MainContent() {
   
   const { user, logout } = useAuth();
 
-  const fetchHistory = async () => {
+  const fetchHistory = () => {
     try {
-      const res = await fetch('/api/history');
-      if (res.ok) {
-        const data = await res.json();
-        setHistory(data.history);
+      const stored = localStorage.getItem('truebee_history');
+      if (stored) {
+        setHistory(JSON.parse(stored));
       }
     } catch (error) {
       console.error('Failed to fetch history:', error);
@@ -47,12 +46,8 @@ function MainContent() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchHistory();
-    } else {
-      setHistory([]);
-    }
-  }, [user]);
+    fetchHistory();
+  }, []);
 
   const handleGenerate = async (options: GenerateOptions) => {
     if (!options.topic.trim()) {
@@ -72,10 +67,21 @@ function MainContent() {
       }
       setResult(text);
       setIsResultModalOpen(true);
-      // Refresh history after successful generation
-      if (user) {
-        fetchHistory();
-      }
+      
+      // Save to localStorage
+      const newItem = {
+        id: Date.now(),
+        topic: options.topic,
+        platform: options.platform,
+        content: text,
+        created_at: new Date().toISOString()
+      };
+      const stored = localStorage.getItem('truebee_history');
+      const currentHistory = stored ? JSON.parse(stored) : [];
+      const newHistory = [newItem, ...currentHistory].slice(0, 50); // Keep last 50
+      localStorage.setItem('truebee_history', JSON.stringify(newHistory));
+      setHistory(newHistory);
+      
     } catch (err: any) {
       setError(err.message || '生成失败，请稍后重试。');
       console.error('Generation Error:', err);
@@ -114,88 +120,13 @@ function MainContent() {
           </div>
 
           <div className="relative">
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-                >
-                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium">
-                    {user.username[0].toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">{user.username}</span>
-                </button>
-
-                <AnimatePresence>
-                  {isUserMenuOpen && (
-                    <>
-                      <div 
-                        className="fixed inset-0 z-40" 
-                        onClick={() => setIsUserMenuOpen(false)} 
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50"
-                      >
-                        {/* <button
-                          onClick={() => {
-                            setIsUserCenterOpen(true);
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                          <Crown className="w-4 h-4 text-amber-500" />
-                          会员中心
-                        </button> */}
-                        {user.is_admin === 1 && (
-                          <button
-                            onClick={() => {
-                              navigate('/admin');
-                              setIsUserMenuOpen(false);
-                            }}
-                            className="w-full px-4 py-3 text-left text-sm text-indigo-600 hover:bg-indigo-50 flex items-center gap-2 font-bold"
-                          >
-                            <Shield className="w-4 h-4" />
-                            管理后台
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            setIsHistoryOpen(true);
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                          <History className="w-4 h-4" />
-                          历史记录
-                        </button>
-                        <div className="h-px bg-slate-100" />
-                        <button
-                          onClick={() => {
-                            logout();
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          退出登录
-                        </button>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
-              >
-                <LogIn className="w-4 h-4" />
-                登录 / 注册
-              </button>
-            )}
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
+            >
+              <History className="w-4 h-4" />
+              历史记录
+            </button>
           </div>
         </div>
       </nav>
