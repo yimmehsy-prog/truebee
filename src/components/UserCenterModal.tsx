@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, Crown, Smartphone, CreditCard, User as UserIcon, History, LogOut } from 'lucide-react';
+import { X, Check, Crown, Smartphone, CreditCard, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface UserCenterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogout: () => void;
-  onOpenHistory: () => void;
 }
 
 const PLANS = [
@@ -16,7 +14,7 @@ const PLANS = [
   { id: 'year', name: '年卡会员', price: 99.9, duration: '12个月', originalPrice: 299.9, badge: '限时特惠' },
 ];
 
-export function UserCenterModal({ isOpen, onClose, onLogout, onOpenHistory }: UserCenterModalProps) {
+export function UserCenterModal({ isOpen, onClose }: UserCenterModalProps) {
   const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState(PLANS[1]);
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
@@ -68,30 +66,6 @@ export function UserCenterModal({ isOpen, onClose, onLogout, onOpenHistory }: Us
                     <X className="w-6 h-6 text-slate-500" />
                   </button>
                 </div>
-
-                {/* Quick Actions */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      onOpenHistory();
-                      onClose();
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <History className="w-4 h-4" />
-                    生成历史
-                  </button>
-                  <button
-                    onClick={() => {
-                      onLogout();
-                      onClose();
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    退出登录
-                  </button>
-                </div>
               </div>
 
               <div className="p-6 md:p-8 space-y-8">
@@ -101,36 +75,36 @@ export function UserCenterModal({ isOpen, onClose, onLogout, onOpenHistory }: Us
                     <Crown className="w-5 h-5 text-amber-500" />
                     选择会员套餐
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-2 md:gap-4">
                     {PLANS.map((plan) => (
                       <div
                         key={plan.id}
                         onClick={() => setSelectedPlan(plan)}
-                        className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all ${
+                        className={`relative p-3 md:p-6 rounded-xl md:rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                           selectedPlan.id === plan.id
                             ? 'border-indigo-600 bg-indigo-50/50'
                             : 'border-slate-100 hover:border-indigo-200 bg-white'
                         }`}
                       >
                         {plan.badge && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-sm">
+                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-1.5 md:px-3 py-0.5 md:py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] md:text-xs font-bold rounded-full shadow-sm whitespace-nowrap z-10">
                             {plan.badge}
                           </div>
                         )}
-                        <div className="text-center space-y-2">
-                          <div className="text-slate-900 font-bold text-lg">{plan.name}</div>
-                          <div className="flex items-baseline justify-center gap-1">
-                            <span className="text-sm text-indigo-600 font-bold">¥</span>
-                            <span className="text-3xl font-extrabold text-indigo-600">{plan.price}</span>
+                        <div className="text-center space-y-1 md:space-y-2">
+                          <div className="text-slate-900 font-bold text-xs md:text-lg truncate">{plan.name}</div>
+                          <div className="flex items-baseline justify-center gap-0.5 md:gap-1">
+                            <span className="text-[10px] md:text-sm text-indigo-600 font-bold">¥</span>
+                            <span className="text-lg md:text-3xl font-extrabold text-indigo-600">{plan.price}</span>
                           </div>
-                          <div className="text-slate-400 text-sm line-through">¥{plan.originalPrice}</div>
-                          <div className="text-slate-500 text-sm pt-2 border-t border-slate-100/50 mt-4">
-                            有效期 {plan.duration}
-                          </div>
+                          <div className="text-slate-400 text-[10px] md:text-sm line-through">¥{plan.originalPrice}</div>
+                        </div>
+                        <div className="text-slate-500 text-[9px] md:text-sm pt-1 md:pt-2 border-t border-slate-100/50 mt-2 md:mt-4 text-center">
+                          {plan.duration}
                         </div>
                         {selectedPlan.id === plan.id && (
-                          <div className="absolute top-3 right-3 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
+                          <div className="absolute top-1 right-1 md:top-3 md:right-3 w-3 h-3 md:w-5 md:h-5 bg-indigo-600 rounded-full flex items-center justify-center">
+                            <Check className="w-2 h-2 md:w-3 md:h-3 text-white" />
                           </div>
                         )}
                       </div>
@@ -144,47 +118,47 @@ export function UserCenterModal({ isOpen, onClose, onLogout, onOpenHistory }: Us
                     <CreditCard className="w-5 h-5 text-indigo-600" />
                     支付方式
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div
                       onClick={() => setPaymentMethod('wechat')}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl border-2 cursor-pointer transition-all ${
                         paymentMethod === 'wechat'
                           ? 'border-green-500 bg-green-50/30'
                           : 'border-slate-100 hover:border-slate-200'
                       }`}
                     >
-                      <div className="w-10 h-10 bg-[#09BB07] rounded-full flex items-center justify-center text-white">
-                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M8.5,13.5A1.5,1.5 0 0,1 7,15A1.5,1.5 0 0,1 5.5,13.5A1.5,1.5 0 0,1 7,12A1.5,1.5 0 0,1 8.5,13.5M17,13.5A1.5,1.5 0 0,1 15.5,15A1.5,1.5 0 0,1 14,13.5A1.5,1.5 0 0,1 15.5,12A1.5,1.5 0 0,1 17,13.5M22,12C22,16.5 18,20.5 13,20.5C12.5,20.5 12,20.5 11.5,20.4L8.5,22L9,18.5C5,17.5 2,15 2,11.5C2,6.5 6.5,2.5 12,2.5C17.5,2.5 22,6.5 22,12Z" /></svg>
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-[#09BB07] rounded-full flex items-center justify-center text-white shrink-0">
+                        <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M8.5,13.5A1.5,1.5 0 0,1 7,15A1.5,1.5 0 0,1 5.5,13.5A1.5,1.5 0 0,1 7,12A1.5,1.5 0 0,1 8.5,13.5M17,13.5A1.5,1.5 0 0,1 15.5,15A1.5,1.5 0 0,1 14,13.5A1.5,1.5 0 0,1 15.5,12A1.5,1.5 0 0,1 17,13.5M22,12C22,16.5 18,20.5 13,20.5C12.5,20.5 12,20.5 11.5,20.4L8.5,22L9,18.5C5,17.5 2,15 2,11.5C2,6.5 6.5,2.5 12,2.5C17.5,2.5 22,6.5 22,12Z" /></svg>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-bold text-slate-900">微信支付</div>
-                        <div className="text-xs text-slate-500">推荐使用</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-900 text-xs md:text-base truncate">微信支付</div>
+                        <div className="text-[10px] md:text-xs text-slate-500 hidden md:block">推荐使用</div>
                       </div>
                       {paymentMethod === 'wechat' && (
-                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
+                        <div className="w-4 h-4 md:w-5 md:h-5 bg-green-500 rounded-full flex items-center justify-center shrink-0">
+                          <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" />
                         </div>
                       )}
                     </div>
 
                     <div
                       onClick={() => setPaymentMethod('alipay')}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl border-2 cursor-pointer transition-all ${
                         paymentMethod === 'alipay'
                           ? 'border-blue-500 bg-blue-50/30'
                           : 'border-slate-100 hover:border-slate-200'
                       }`}
                     >
-                      <div className="w-10 h-10 bg-[#1677FF] rounded-full flex items-center justify-center text-white">
-                        <span className="font-bold text-sm">支</span>
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-[#1677FF] rounded-full flex items-center justify-center text-white shrink-0">
+                        <span className="font-bold text-xs md:text-sm">支</span>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-bold text-slate-900">支付宝</div>
-                        <div className="text-xs text-slate-500">安全快捷</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-900 text-xs md:text-base truncate">支付宝</div>
+                        <div className="text-[10px] md:text-xs text-slate-500 hidden md:block">安全快捷</div>
                       </div>
                       {paymentMethod === 'alipay' && (
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
+                        <div className="w-4 h-4 md:w-5 md:h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
+                          <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" />
                         </div>
                       )}
                     </div>

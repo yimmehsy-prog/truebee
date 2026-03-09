@@ -28,10 +28,24 @@ const authenticateToken = (req: any, res: any, next: any) => {
     if (err) {
       req.user = null;
     } else {
-      req.user = user;
+      // Get full user info from DB to include is_admin
+      const dbUser = db.prepare('SELECT id, username, is_admin FROM users WHERE id = ?').get(user.id) as any;
+      if (dbUser) {
+        req.user = dbUser;
+      } else {
+        req.user = null;
+      }
     }
     next();
   });
+};
+
+const isAdmin = (req: any, res: any, next: any) => {
+  if (req.user && req.user.is_admin) {
+    next();
+  } else {
+    res.status(403).json({ error: 'Access denied. Admin only.' });
+  }
 };
 
 app.use(authenticateToken);
@@ -79,6 +93,9 @@ app.post('/api/auth/login', async (req, res) => {
 
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
 
+    // Update last login
+    db.prepare('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?').run(user.id);
+
     res.cookie('truebee_token', token, {
       httpOnly: true,
       secure: true,
@@ -107,6 +124,41 @@ app.get('/api/auth/me', (req: any, res) => {
   } else {
     res.status(401).json({ error: 'Not authenticated' });
   }
+});
+
+// Admin Routes
+app.get('/api/admin/users', isAdmin, (req, res) => {
+  const users = db.prepare(`
+    SELECT id, username, is_admin, created_at, last_login,
+    (SELECT COUNT(*) FROM history WHERE user_id = users.id) as generation_count
+    FROM users 
+    ORDER BY created_at DESC
+  `).all();
+  res.json({ users });
+});
+
+app.get('/api/admin/stats', isAdmin, (req, res) => {
+  const stats = {
+    totalUsers: (db.prepare('SELECT COUNT(*) as count FROM users').get() as any).count,
+    totalGenerations: (db.prepare('SELECT COUNT(*) as count FROM history').get() as any).count,
+    todayGenerations: (db.prepare("SELECT COUNT(*) as count FROM history WHERE date(created_at) = date('now')").get() as any).count,
+  };
+  res.json({ stats });
+});
+
+// Route to make first user an admin (for initial setup)
+app.post('/api/admin/setup', (req: any, res) => {
+  const adminCount = (db.prepare('SELECT COUNT(*) as count FROM users WHERE is_admin = 1').get() as any).count;
+  if (adminCount > 0) {
+    return res.status(403).json({ error: 'Admin already exists' });
+  }
+
+  if (!req.user) {
+    return res.status(401).json({ error: 'Login first' });
+  }
+
+  db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(req.user.id);
+  res.json({ message: 'You are now an admin' });
 });
 
 // History Routes

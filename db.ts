@@ -13,6 +13,8 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+    is_admin INTEGER DEFAULT 0,
+    last_login DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -32,6 +34,14 @@ db.exec(`
 `);
 
 // Try to add new columns if they don't exist (for existing databases)
+try {
+  db.exec('ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0');
+} catch (e) {}
+
+try {
+  db.exec('ALTER TABLE users ADD COLUMN last_login DATETIME');
+} catch (e) {}
+
 try {
   db.exec('ALTER TABLE history ADD COLUMN highlights TEXT');
 } catch (e) {
