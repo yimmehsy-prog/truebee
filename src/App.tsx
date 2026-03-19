@@ -61,19 +61,21 @@ function MainContent() {
     setLastOptions(options);
     
     try {
-      const text = await generateCopy(options);
-      if (!text) {
-        throw new Error('AI 返回内容为空，请重试');
-      }
-      setResult(text);
+      setResult('');
       setIsResultModalOpen(true);
+      
+      let finalContent = '';
+      await generateCopy(options, (currentText) => {
+        setResult(currentText);
+        finalContent = currentText;
+      });
       
       // Save to localStorage
       const newItem = {
         id: Date.now(),
         topic: options.topic,
         platform: options.platform,
-        content: text,
+        content: finalContent,
         created_at: new Date().toISOString()
       };
       const stored = localStorage.getItem('truebee_history');
@@ -255,6 +257,7 @@ function MainContent() {
         content={result} 
         onClose={() => setIsResultModalOpen(false)}
         onUpdate={handleUpdateResult}
+        isLoading={isLoading}
       />
     </div>
   );

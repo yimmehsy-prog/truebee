@@ -8,9 +8,10 @@ interface ResultModalProps {
   content: string;
   onClose: () => void;
   onUpdate: (newContent: string) => void;
+  isLoading?: boolean;
 }
 
-export function ResultModal({ isOpen, content, onClose, onUpdate }: ResultModalProps) {
+export function ResultModal({ isOpen, content, onClose, onUpdate, isLoading }: ResultModalProps) {
   const [editedContent, setEditedContent] = useState(content);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
@@ -90,13 +91,23 @@ export function ResultModal({ isOpen, content, onClose, onUpdate }: ResultModalP
             {/* Header */}
             <div className="px-4 md:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
               <div className="flex items-center gap-4">
-                <h3 className="text-lg font-bold text-slate-900">生成结果</h3>
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  生成结果
+                  {isLoading && (
+                    <span className="flex items-center gap-1 text-xs font-normal text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
+                      <div className="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                      AI 正在思考中...
+                    </span>
+                  )}
+                </h3>
               </div>
               
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopy}
+                  disabled={isLoading}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    isLoading ? 'bg-slate-100 text-slate-400 cursor-not-allowed' :
                     copied
                       ? 'bg-green-100 text-green-700'
                       : 'bg-indigo-600 text-white hover:bg-indigo-700'
@@ -125,12 +136,12 @@ export function ResultModal({ isOpen, content, onClose, onUpdate }: ResultModalP
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-slate-50/30 relative">
               <textarea
                 value={editedContent}
                 onChange={(e) => handleContentChange(e.target.value)}
                 className="w-full h-full min-h-[400px] p-8 md:p-12 rounded-2xl border border-slate-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-800 font-sans leading-relaxed resize-none bg-white shadow-sm"
-                placeholder="在此修改文案内容..."
+                placeholder={isLoading ? "AI 正在奋笔疾书，请稍候..." : "在此修改文案内容..."}
               />
             </div>
 

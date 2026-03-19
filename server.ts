@@ -211,7 +211,7 @@ ${isNoEmoji ? '- 核心禁忌：文案中绝对不能出现任何Emoji表情符�
 
 请开始你的表演：`;
 
-  try {
+    try {
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
@@ -225,7 +225,7 @@ ${isNoEmoji ? '- 核心禁忌：文案中绝对不能出现任何Emoji表情符�
           { role: "user", content: prompt }
         ],
         temperature: 0.8,
-        stream: false
+        stream: true
       })
     });
 
@@ -235,17 +235,42 @@ ${isNoEmoji ? '- 核心禁忌：文案中绝对不能出现任何Emoji表情符�
         throw new Error(`DeepSeek API error: ${response.status} ${errorText}`);
     }
 
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Unexpected DeepSeek API response structure:', JSON.stringify(data));
-      throw new Error('Invalid response from DeepSeek API');
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    let fullContent = '';
+    const decoder = new TextDecoder("utf-8");
+
+    if (response.body) {
+      for await (const chunk of response.body as any) {
+        const text = decoder.decode(chunk, { stream: true });
+        const lines = text.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6);
+            if (dataStr.trim() === '[DONE]') {
+              res.write(`data: [DONE]\n\n`);
+              continue;
+            }
+            
+            try {
+              const data = JSON.parse(dataStr);
+              let content = data.choices?.[0]?.delta?.content;
+              if (content) {
+                // Programmatic safeguard: Remove all '*' characters as requested by user
+                content = content.replace(/\*/g, '');
+                fullContent += content;
+                res.write(`data: ${JSON.stringify({ content })}\n\n`);
+              }
+            } catch (e) {
+              // Ignore parse errors for incomplete chunks
+            }
+          }
+        }
+      }
     }
-
-    let content = data.choices[0].message.content;
-
-    // Programmatic safeguard: Remove all '*' characters as requested by user
-    content = content.replace(/\*/g, '');
 
     // Save to history if user is logged in
     if (req.user) {
@@ -254,13 +279,13 @@ ${isNoEmoji ? '- 核心禁忌：文案中绝对不能出现任何Emoji表情符�
           INSERT INTO history (user_id, topic, highlights, platform, tone, length, language, content)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
-        insert.run(req.user.id, topic, highlights || '', platform, tone, length, language, content);
+        insert.run(req.user.id, topic, highlights || '', platform, tone, length, language, fullContent);
       } catch (dbError) {
         console.error('Failed to save history:', dbError);
       }
     }
 
-    res.json({ content });
+    res.end();
 
   } catch (error: any) {
     console.error('Error calling DeepSeek:', error);
